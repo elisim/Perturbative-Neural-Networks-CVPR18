@@ -10,6 +10,7 @@ import numpy as np
 from torch import nn
 import models
 import torch.optim as optim
+import transfer
 
 result_path = "results/"
 result_path = os.path.join(result_path, datetime.now().strftime('%Y-%m-%d_%H-%M-%S/'))
@@ -23,6 +24,7 @@ parser.add_argument('--dataroot', type=str, default='./data', metavar='', help='
 parser.add_argument('--save', type=str, default=result_path +'Save', metavar='', help='save the trained models here')
 parser.add_argument('--logs', type=str, default=result_path +'Logs', metavar='', help='save the training log files here')
 parser.add_argument('--resume', type=str, default=None, metavar='', help='full path of models to resume training')
+parser.add_argument('--transfer', type=bool, default=False, metavar='', help='use transfer learning or not')
 
 # ======================== Network Model Setings ===================================
 
@@ -82,6 +84,7 @@ random.seed(args.manual_seed)
 torch.manual_seed(args.manual_seed)
 utils.saveargs(args)
 
+
 class Model:
     def __init__(self, args):
         self.cuda = torch.cuda.is_available()
@@ -116,7 +119,7 @@ class Model:
                 self.avgpool = 1
 
 
-        if self.dataset_train_name == "CIFAR100":
+        elif self.dataset_train_name == "CIFAR100":
             self.input_size = 32
             self.nclasses = 100
             if self.filter_size < 7:
@@ -281,20 +284,30 @@ if args.resume is None:
     best_epoch = 0
     if os.path.isdir(args.save) == False:
         os.makedirs(args.save)
-else:
+else: ### Eli: Transfer Learning
     print('\n\nLoading model from saved checkpoint at {}\n\n'.format(args.resume))
     #self.model.load_state_dict(checkpoints.load(checkpoints.latest('resume')))
     setup.model = torch.load(args.resume)
     model = setup.model
     train = setup.train
     test = setup.test
-    te_loss, te_acc = test(loader_test)
-    init_epoch = int(args.resume.split('_')[3])  # extract N from 'results/xxx_xxx/Save/model_epoch_N_acc_nn.nn.pth'
-    print('\n\nRestored Model Accuracy (epoch {:d}): {:.2f}\n\n'.format(init_epoch, te_acc))
-    acc_best = te_acc
-    best_epoch = init_epoch
-    args.save = '/'.join(args.resume.split('/')[:-1])
-    init_epoch += 1
+    if args.transfer:
+        model = transfer.transfer(model, setup.nclasses)
+        init_epoch = 0
+        acc_best = 0
+        best_epoch = 0
+        if os.path.isdir(args.save) == False:
+            os.makedirs(args.save)
+    else:
+        te_loss, te_acc = test(loader_test)
+        init_epoch = int(args.resume.split('_')[3])  # extract N from 'results/xxx_xxx/Save/model_epoch_N_acc_nn.nn.pth'
+        print('\n\nRestored Model Accuracy (epoch {:d}): {:.2f}\n\n'.format(init_epoch, te_acc))
+        acc_best = te_acc
+        best_epoch = init_epoch
+        args.save = '/'.join(args.resume.split('/')[:-1])
+        init_epoch += 1
+
+
 
 
 print('\n\n****** Model Graph ******\n\n')
