@@ -24,5 +24,6 @@ def transfer(model, n_classes):
     else:
         raise ValueError(f"Unknown model {model_name}")
 
+    model = model.to('cuda')
     return model
 

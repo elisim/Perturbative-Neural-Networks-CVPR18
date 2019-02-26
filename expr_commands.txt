@@ -11,9 +11,9 @@ python main.py --net-type 'perturb_resnet18' --dataset-test 'LSUN' --dataset-tra
 
 
 transfer CIFAR-10:
-python main.py --net-type 'perturb_resnet18' --dataset-test 'CIFAR10' --dataset-train 'CIFAR10' --transfer True --resume '/home/eli/Workspace/pnn.pytorch.update/results/2019-02-25_22-24-18/Save/model_epoch_268_acc_86.20.pth' --nfilters 256 --batch-size 20 --learning-rate 1e-4 --first_filter_size 0 --filter_size 0 --nmasks 1 --level 0.1 --optim-method Adam --nepochs 10
+python main.py --net-type 'perturb_resnet18' --dataset-test 'CIFAR10' --dataset-train 'CIFAR10' --transfer True --resume '/home/eli/Workspace/pnn-results/CIFAR-10/model_epoch_369_acc_86.24.pth' --nfilters 256 --batch-size 20 --learning-rate 1e-4 --first_filter_size 0 --filter_size 0 --nmasks 1 --level 0.1 --optim-method Adam --nepochs 11
 
 
 transfer MNIST:
-python main.py --net-type 'lenet' --dataset-test 'MNIST' --dataset-train 'MNIST' --transfer True --resume '/home/eli/Workspace/pnn.pytorch.update/results/2019-02-26_00-00-49/Save/model_epoch_72_acc_98.22.pth' --nfilters 256 --batch-size 20 --learning-rate 1e-4 --first_filter_size 0 --filter_size 0 --nmasks 1 --level 0.1 --optim-method Adam --nepochs 10
+python main.py --net-type 'lenet' --dataset-test 'MNIST' --dataset-train 'MNIST' --transfer True --resume '/home/eli/Workspace/pnn-results/MNIST/model_epoch_72_acc_98.22.pth' --nfilters 256 --batch-size 20 --learning-rate 1e-4 --first_filter_size 0 --filter_size 0 --nmasks 1 --level 0.1 --optim-method Adam --nepochs 11
 
