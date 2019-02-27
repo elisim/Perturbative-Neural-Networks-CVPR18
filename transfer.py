@@ -1,11 +1,11 @@
 from torch import nn
 
-
 def transfer(model, n_classes):
     """
-    Run transfer learning
+    modify last layers according to model type for transfer learning
     """
-
+    import ipdb
+    ipdb.set_trace()
     model_name = model.__class__.__name__
     # Freeze early layers
     for param in model.parameters():
@@ -19,9 +19,16 @@ def transfer(model, n_classes):
             nn.ReLU(),
             nn.Linear(128, n_classes, bias=True)
         )
+
     elif model_name == 'PerturbResNet':
         n_inputs = model.linear.in_features
+
+        # unfreeze last PerturbBasicBlock params
+        for param in  model.layer4[1].parameters():
+            param.requires_grad = True
+
         model.linear = nn.Linear(n_inputs, n_classes, bias=True)
+
     else:
         raise ValueError(f"Unknown model {model_name}")
 

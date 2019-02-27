@@ -307,7 +307,8 @@ class PerturbBasicBlock(nn.Module):
 
 class PerturbResNet(nn.Module):
     """
-    implementation motivated by https://github.com/kuangliu/pytorch-cifar/blob/master/models/resnet.py
+    ResNet-18 architecture where each convolution is replaced with perturbation.
+    The implementation motivated by https://github.com/kuangliu/pytorch-cifar/blob/master/models/resnet.py
     """
     def __init__(self,
                  block,
@@ -393,9 +394,10 @@ class PerturbResNet(nn.Module):
         return x
 
 
-class PerturbLeNet(nn.Module):
+class LeNet(nn.Module):
     """
-    implementation motivated by https://github.com/kuangliu/pytorch-cifar/blob/master/models/lenet.py
+    LeNet architecture where each convolution is replaced with perturbation.
+    The implementation motivated by https://github.com/kuangliu/pytorch-cifar/blob/master/models/lenet.py
     """
     def __init__(self,
                  nfilters=None,
@@ -416,7 +418,7 @@ class PerturbLeNet(nn.Module):
                  train_masks=False,
                  noise_type='uniform',
                  mix_maps=None):
-        super(PerturbLeNet, self).__init__()
+        super(LeNet, self).__init__()
         if filter_size == 5:
             n = 5
         else:
@@ -485,6 +487,6 @@ def perturb_resnet18(nfilters, avgpool=4, nclasses=10, nmasks=32, level=0.1, fil
 def lenet(nfilters, avgpool=None, nclasses=10, nmasks=32, level=0.1, filter_size=3, first_filter_size=0,
           pool_type=None, input_size=None, scale_noise=1, act='relu', use_act=True, dropout=0.5,
           unique_masks=False, debug=False, noise_type='uniform', train_masks=False, mix_maps=None):
-    return PerturbLeNet(nfilters=nfilters, nclasses=nclasses, nmasks=nmasks, level=level, filter_size=filter_size, pool_type=pool_type,
-                        scale_noise=scale_noise, act=act, first_filter_size=first_filter_size, input_size=input_size, mix_maps=mix_maps,
-                        use_act=use_act, dropout=dropout, unique_masks=unique_masks, debug=debug, noise_type=noise_type, train_masks=train_masks)
+    return LeNet(nfilters=nfilters, nclasses=nclasses, nmasks=nmasks, level=level, filter_size=filter_size, pool_type=pool_type,
+                 scale_noise=scale_noise, act=act, first_filter_size=first_filter_size, input_size=input_size, mix_maps=mix_maps,
+                 use_act=use_act, dropout=dropout, unique_masks=unique_masks, debug=debug, noise_type=noise_type, train_masks=train_masks)
