@@ -482,7 +482,7 @@ def perturb_resnet18(nfilters, avgpool=4, nclasses=10, nmasks=32, level=0.1, fil
                          debug=debug, noise_type=noise_type, input_size=input_size, mix_maps=mix_maps)
 
 
-def lenet(nfilters, nclasses=10, nmasks=32, level=0.1, filter_size=3, first_filter_size=0,
+def lenet(nfilters, avgpool=None, nclasses=10, nmasks=32, level=0.1, filter_size=3, first_filter_size=0,
           pool_type=None, input_size=None, scale_noise=1, act='relu', use_act=True, dropout=0.5,
           unique_masks=False, debug=False, noise_type='uniform', train_masks=False, mix_maps=None):
     return PerturbLeNet(nfilters=nfilters, nclasses=nclasses, nmasks=nmasks, level=level, filter_size=filter_size, pool_type=pool_type,
