@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 
 class Dataloader:
     """
-    Interface for load train & test data
+    Interface for load train and test data
     """
     def __init__(self, args, input_size):
         self.args = args
