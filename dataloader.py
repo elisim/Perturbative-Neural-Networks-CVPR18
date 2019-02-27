@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 
 class Dataloader:
     """
-    Interface for load training and testing data
+    Interface for load train & test data
     """
     def __init__(self, args, input_size):
         self.args = args
@@ -15,7 +15,9 @@ class Dataloader:
 
         ### Train preparation ###
         if self.dataset_train_name == 'CIFAR10' or self.dataset_train_name == 'CIFAR100':
-            self.dataset_train = getattr(datasets, self.dataset_train_name)(root=self.args.dataroot, train=True, download=True,
+            self.dataset_train = getattr(datasets, self.dataset_train_name)(root=self.args.dataroot,
+                                                                            train=True,
+                                                                            download=True,
                                                                             transform=transforms.Compose([
                                                                                       transforms.RandomCrop(self.input_size, padding=4),
                                                                                       transforms.RandomHorizontalFlip(),
@@ -24,29 +26,55 @@ class Dataloader:
                                                                                       ]))
 
         elif self.dataset_train_name == 'MNIST':
-            self.dataset_train = getattr(datasets, self.dataset_train_name)(root=self.args.dataroot, train=True, download=True,
+            self.dataset_train = getattr(datasets, self.dataset_train_name)(root=self.args.dataroot,
+                                                                            train=True,
+                                                                            download=True,
                                                                             transform=transforms.Compose([
                                                                                       transforms.ToTensor(),
                                                                                       transforms.Normalize((0.1307,), (0.3081,))
-                                                                                     ]))
+                                                                                      ]))
+
+        elif self.dataset_train_name == 'EMNIST':
+            self.dataset_train = getattr(datasets, self.dataset_train_name)(root=self.args.dataroot,
+                                                                            split='balanced',
+                                                                            train=True,
+                                                                            download=True,
+                                                                            transform=transforms.Compose([
+                                                                                      transforms.ToTensor(),
+                                                                                      transforms.Normalize((0.1307,),(0.3081,))
+                                                                                      ]))
+
         else:
             raise(Exception("Unknown Dataset"))
 
 
         ### Test preparation ###
         if self.dataset_test_name == 'CIFAR10' or self.dataset_test_name == 'CIFAR100':
-            self.dataset_test = getattr(datasets, self.dataset_test_name)(root=self.args.dataroot, train=False, download=True,
+            self.dataset_test = getattr(datasets, self.dataset_test_name)(root=self.args.dataroot,
+                                                                          train=False,
+                                                                          download=True,
                                                                           transform=transforms.Compose([
                                                                                     transforms.ToTensor(),
-                                                                                    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))]
-                                                                                    ))
+                                                                                    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+                                                                                    ]))
 
         elif self.dataset_test_name == 'MNIST':
-            self.dataset_test = getattr(datasets, self.dataset_test_name)(root=self.args.dataroot, train=False, download=True,
+            self.dataset_test = getattr(datasets, self.dataset_test_name)(root=self.args.dataroot,
+                                                                          train=False,
+                                                                          download=True,
                                                                           transform=transforms.Compose([
                                                                                     transforms.ToTensor(),
-                                                                                    transforms.Normalize((0.1307,), (0.3081,))]
-                                                                                    ))
+                                                                                    transforms.Normalize((0.1307,), (0.3081,))
+                                                                                    ]))
+        elif self.dataset_train_name == 'EMNIST':
+            self.dataset_test = getattr(datasets, self.dataset_train_name)(root=self.args.dataroot,
+                                                                            split='balanced',
+                                                                            train=False,
+                                                                            download=True,
+                                                                            transform=transforms.Compose([
+                                                                                      transforms.ToTensor(),
+                                                                                      transforms.Normalize((0.1307,), (0.3081,))
+                                                                                      ]))
 
         else:
             raise(Exception("Unknown Dataset"))

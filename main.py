@@ -5,7 +5,6 @@ import utils
 import os
 from datetime import datetime
 import argparse
-import math
 import numpy as np
 from torch import nn
 import models
@@ -118,7 +117,6 @@ class Model:
             elif self.filter_size == 7:
                 self.avgpool = 1
 
-
         elif self.dataset_train_name == "CIFAR100":
             self.input_size = 32
             self.nclasses = 100
@@ -127,12 +125,19 @@ class Model:
             elif self.filter_size == 7:
                 self.avgpool = 1
 
-
-        elif self.dataset_train_name.startswith("MNIST"):
+        elif self.dataset_train_name == "MNIST":
             self.nclasses = 10
             self.input_size = 28
             if self.filter_size < 7:
-                self.avgpool = 14  #TODO
+                self.avgpool = 14
+            elif self.filter_size == 7:
+                self.avgpool = 7
+
+        elif self.dataset_train_name == "EMNIST":
+            self.nclasses = 47
+            self.input_size = 28
+            if self.filter_size < 7:
+                self.avgpool = 14
             elif self.filter_size == 7:
                 self.avgpool = 7
 
@@ -162,7 +167,7 @@ class Model:
 
         self.loss_fn = nn.CrossEntropyLoss()
 
-        ########### Eli: move all params to GPU
+        # move all params to GPU
         if self.cuda:
             self.model = self.model.cuda()
             self.loss_fn = self.loss_fn.cuda()
@@ -170,7 +175,7 @@ class Model:
         parameters = filter(lambda p: p.requires_grad, self.model.parameters())
 
         if args.optim_method == 'Adam':
-            self.optimizer = optim.Adam(parameters, lr=self.lr, betas=(args.adam_beta1, args.adam_beta2), weight_decay=args.weight_decay)  #increase weight decay for no-noise large models
+            self.optimizer = optim.Adam(parameters, lr=self.lr, betas=(args.adam_beta1, args.adam_beta2), weight_decay=args.weight_decay)  # increase weight decay for no-noise large models
         elif args.optim_method == 'RMSprop':
             self.optimizer = optim.RMSprop(parameters, lr=self.lr, momentum=args.momentum, weight_decay=args.weight_decay)
         elif args.optim_method == 'SGD':
@@ -179,17 +184,15 @@ class Model:
         else:
             raise(Exception("Unknown Optimization Method"))
 
-
     def learning_rate(self, epoch):
         if self.dataset_train_name == 'CIFAR10':
-            new_lr = self.lr * ((0.2 ** int(epoch >= 150)) * (0.2 ** int(epoch >= 250)) * (0.2 ** int(epoch >= 300)) * (0.2 ** int(epoch >= 350)) * (0.2 ** int(epoch >= 400))) # (1) Felix modified this
+            new_lr = self.lr * ((0.2 ** int(epoch >= 150)) * (0.2 ** int(epoch >= 250)) * (0.2 ** int(epoch >= 300)) * (0.2 ** int(epoch >= 350)) * (0.2 ** int(epoch >= 400)))
         elif self.dataset_train_name == 'CIFAR100':
             new_lr = self.lr * ((0.1 ** int(epoch >= 80)) * (0.1 ** int(epoch >= 120))* (0.1 ** int(epoch >= 160)))
-        elif self.dataset_train_name == 'MNIST':
+        elif self.dataset_train_name == 'MNIST' or self.dataset_train_name == 'EMNIST':
             new_lr = self.lr * ((0.2 ** int(epoch >= 30)) * (0.2 ** int(epoch >= 60))* (0.2 ** int(epoch >= 90)))
 
         return new_lr
-
 
     def train(self, epoch, dataloader):
         self.model.train()
