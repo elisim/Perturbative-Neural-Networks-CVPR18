@@ -10,11 +10,14 @@ from torch import nn
 import models
 import torch.optim as optim
 import transfer
+import warnings
+
 
 result_path = "results/"
 result_path = os.path.join(result_path, datetime.now().strftime('%Y-%m-%d_%H-%M-%S/'))
 
 parser = argparse.ArgumentParser(description='PNN')
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # ======================== Data Setings ============================================
 parser.add_argument('--dataset-test', type=str, default='CIFAR10', metavar='', help='name of testing dataset')
@@ -270,7 +273,6 @@ if args.resume is None:
         os.makedirs(args.save)
 else: ### Eli: Transfer Learning
     print('\n\nLoading model from saved checkpoint at {}\n\n'.format(args.resume))
-    #self.model.load_state_dict(checkpoints.load(checkpoints.latest('resume')))
     setup.model = torch.load(args.resume)
     model = setup.model
     train = setup.train
