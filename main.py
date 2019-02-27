@@ -365,7 +365,7 @@ for epoch in range(init_epoch, args.nepochs, 1):
 
     accuracies.append(te_acc)
 
-    if te_acc > acc_best and epoch > 10:
+    if te_acc > acc_best:
         print('{}  Epoch {:d}/{:d}  Train: Loss {:.2f} Accuracy {:.2f} Test: Loss {:.2f} Accuracy {:.2f} (best result, saving to {})'.format(
                         str(datetime.now())[:-7], epoch, args.nepochs, tr_loss, tr_acc, te_loss, te_acc, args.save))
         model_best = True

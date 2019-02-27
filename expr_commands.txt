@@ -11,7 +11,7 @@ python main.py --net-type 'perturb_resnet18' --dataset-test 'LSUN' --dataset-tra
 
 
 transfer CIFAR-10:
-python main.py --net-type 'perturb_resnet18' --dataset-test 'CIFAR10' --dataset-train 'CIFAR10' --transfer True --resume '/home/eli/Workspace/pnn-results/CIFAR-10/model_epoch_369_acc_86.24.pth' --nfilters 256 --batch-size 20 --learning-rate 1e-4 --first_filter_size 0 --filter_size 0 --nmasks 1 --level 0.1 --optim-method Adam --nepochs 11
+python main.py --net-type 'perturb_resnet18' --dataset-test 'CIFAR100' --dataset-train 'CIFAR100' --transfer True --resume '/home/eli/Workspace/pnn-results/CIFAR-10/model_epoch_369_acc_86.24.pth' --nfilters 256 --batch-size 20 --learning-rate 1e-4 --first_filter_size 0 --filter_size 0 --nmasks 1 --level 0.1 --optim-method Adam --nepochs 11
 
 
 transfer MNIST:
