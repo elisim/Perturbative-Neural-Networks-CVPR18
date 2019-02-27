@@ -1,17 +1,16 @@
 from torch import nn
 
+
 def transfer(model, n_classes):
     """
     modify last layers according to model type for transfer learning
     """
-    import ipdb
-    ipdb.set_trace()
     model_name = model.__class__.__name__
     # Freeze early layers
     for param in model.parameters():
         param.requires_grad = False
 
-    if model_name == 'PerturbLeNet':
+    if model_name == 'LeNet':
         n_inputs = model.last_layers[1].in_features
         model.last_layers = nn.Sequential(
             nn.Linear(n_inputs, 128, bias=True),
