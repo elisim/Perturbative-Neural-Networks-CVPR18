@@ -134,7 +134,7 @@ class Model:
                 self.avgpool = 7
 
         elif self.dataset_train_name.startswith("EMNIST"):
-            self.nclasses = 28
+            self.nclasses = 26
             self.input_size = 28
             if self.filter_size < 7:
                 self.avgpool = 14  #TODO
