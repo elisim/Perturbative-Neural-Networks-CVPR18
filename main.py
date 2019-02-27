@@ -82,7 +82,7 @@ parser.add_argument('--adam-beta2', type=float, default=0.999, metavar='', help=
 args = parser.parse_args()
 random.seed(args.manual_seed)
 torch.manual_seed(args.manual_seed)
-utils.saveargs(args)
+utils.save_args(args)
 
 
 class Model:
@@ -135,14 +135,6 @@ class Model:
                 self.avgpool = 14  #TODO
             elif self.filter_size == 7:
                 self.avgpool = 7
-
-        elif self.dataset_train_name == "LSUN":
-            self.input_size = 128
-            self.nclasses = 10
-            if self.filter_size < 7:
-                self.avgpool = 4
-            elif self.filter_size == 7:
-                self.avgpool = 1
 
         else:
             raise ValueError("Eli: Unknown Dataset {}".format(self.dataset_train_name))
