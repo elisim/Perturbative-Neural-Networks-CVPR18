@@ -205,7 +205,7 @@ class Dataloader:
                 )
 
         elif self.dataset_test_name == 'EMNIST':
-            self.dataset_test = getattr(datasets, self.dataset_test_name)(root=self.args.dataroot, train=False, download=True,
+            self.dataset_test = getattr(datasets, self.dataset_test_name)(root=self.args.dataroot, split='letters',train=False, download=True,
                 transform=transforms.Compose([
                        transforms.ToTensor(),
                        transforms.Normalize((0.1307,), (0.3081,))
