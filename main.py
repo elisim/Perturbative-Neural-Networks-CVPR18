@@ -15,7 +15,7 @@ import transfer
 result_path = "results/"
 result_path = os.path.join(result_path, datetime.now().strftime('%Y-%m-%d_%H-%M-%S/'))
 
-parser = argparse.ArgumentParser(description='Your project title goes here')
+parser = argparse.ArgumentParser(description='PNN')
 
 # ======================== Data Setings ============================================
 parser.add_argument('--dataset-test', type=str, default='CIFAR10', metavar='', help='name of testing dataset')
@@ -175,11 +175,7 @@ class Model:
             self.optimizer = optim.RMSprop(parameters, lr=self.lr, momentum=args.momentum, weight_decay=args.weight_decay)
         elif args.optim_method == 'SGD':
             self.optimizer = optim.SGD(parameters, lr=self.lr,  momentum=args.momentum, weight_decay=args.weight_decay, nesterov=True)
-            """
-            # use this to set different learning rates for training noise masks and regular parameters:
-            self.optimizer = optim.SGD([{'params': [param for name, param in self.model.named_parameters() if 'noise' not in name]},
-                                        {'params': [param for name, param in self.model.named_parameters() if 'noise' in name], 'lr': self.lr * 10},
-                                        ], lr=self.lr, momentum=args.momentum, weight_decay=args.weight_decay, nesterov=True) #"""
+
         else:
             raise(Exception("Unknown Optimization Method"))
 
@@ -187,17 +183,11 @@ class Model:
     def learning_rate(self, epoch):
         if self.dataset_train_name == 'CIFAR10':
             new_lr = self.lr * ((0.2 ** int(epoch >= 150)) * (0.2 ** int(epoch >= 250)) * (0.2 ** int(epoch >= 300)) * (0.2 ** int(epoch >= 350)) * (0.2 ** int(epoch >= 400))) # (1) Felix modified this
-            # new_lr = self.lr * ((0.2 ** int(epoch >= 60)) * (0.2 ** int(epoch >= 90)) * (0.2 ** int(epoch >= 120)) * (0.2 ** int(epoch >= 160)))
         elif self.dataset_train_name == 'CIFAR100':
             new_lr = self.lr * ((0.1 ** int(epoch >= 80)) * (0.1 ** int(epoch >= 120))* (0.1 ** int(epoch >= 160)))
         elif self.dataset_train_name == 'MNIST':
             new_lr = self.lr * ((0.2 ** int(epoch >= 30)) * (0.2 ** int(epoch >= 60))* (0.2 ** int(epoch >= 90)))
-        elif self.dataset_train_name == 'FRGC':
-            new_lr = self.lr * ((0.1 ** int(epoch >= 80)) * (0.1 ** int(epoch >= 120))* (0.1 ** int(epoch >= 160)))
-        elif self.dataset_train_name == 'ImageNet':
-            decay = math.floor((epoch - 1) / 30)
-            new_lr = self.lr * math.pow(0.1, decay)
-            #print('\nReducing learning rate to {}\n'.format(new_lr))
+
         return new_lr
 
 
@@ -207,7 +197,6 @@ class Model:
         lr = self.learning_rate(epoch+1)
 
         for param_group in self.optimizer.param_groups:
-            #print(param_group)  #TODO figure out how to set diff learning rate to noise params if train_masks
             param_group['lr'] = lr
 
         losses = []
@@ -321,16 +310,7 @@ for name, param in [(name, param) for name, param in model.named_parameters() if
     masks_total += size
 
 print('\n\nModel size: {:.2f}M regular parameters, {:.2f}M noise mask values\n\n'.format(model_total - masks_total, masks_total))
-"""
-print('\n\n******************** Model parameters:\n')
-for param in model.parameters():
-    #if param.requires_grad:
-    print('{} {}'.format(list(param.size()), param.requires_grad))
-    
-print('\n\n****** Model state_dict() ******\n\n')
-for name, param in model.state_dict().items():
-    print('{}  {}  {}'.format(name, list(param.size()), param.requires_grad))
-"""
+
 
 print('\n\n****** Model Configuration ******\n\n')
 for arg in vars(args):
@@ -376,18 +356,7 @@ print('\n\nTest Accuracies:\n\n')
 
 for v in accuracies:
     print('{:.2f}'.format(v)+', ', end='')
-print('\n\n')
 
-plot = False
-if plot:
-    import matplotlib.pyplot as plt
-    plt.plot(range(args.nepochs), accuracies, 'black', label='model_1')
-    plt.plot(range(args.nepochs), accuracies, 'red', label='model_2')
-    plt.plot(range(args.nepochs), accuracies, 'blue', label='model_3')
-    plt.title('Test Accuracy {}'.format(args.dataset_test), fontsize=18)
-    plt.xlabel('Epochs', fontsize=16)
-    plt.ylabel('%', fontsize=16)
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
-    plt.legend(loc='center right', prop={'size': 14})
-    plt.show()
+
+
+
