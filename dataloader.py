@@ -86,8 +86,8 @@ class Dataloader:
                    ])
                 )
 
-        elif self.dataset_train_name == 'Fashion-MNIST':
-            self.dataset_train = getattr(datasets, self.dataset_train_name)(root=self.args.dataroot, train=True, download=True,
+        elif self.dataset_train_name == 'EMNIST':
+            self.dataset_train = getattr(datasets, self.dataset_train_name)(root=self.args.dataroot, split='letters', train=True, download=True,
                 transform=transforms.Compose([
                        transforms.ToTensor(),
                        transforms.Normalize((0.1307,), (0.3081,))

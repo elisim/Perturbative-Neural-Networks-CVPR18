@@ -133,7 +133,7 @@ class Model:
             elif self.filter_size == 7:
                 self.avgpool = 7
 
-        elif self.dataset_train_name.startswith("Fashion-MNIST"):
+        elif self.dataset_train_name.startswith("EMNIST"):
             self.nclasses = 10
             self.input_size = 28
             if self.filter_size < 7:
@@ -235,7 +235,7 @@ class Model:
             decay = math.floor((epoch - 1) / 30)
             new_lr = self.lr * math.pow(0.1, decay)
             #print('\nReducing learning rate to {}\n'.format(new_lr))
-        elif self.dataset_train_name == 'FashionMNIST':
+        elif self.dataset_train_name == 'EMNIST':
             decay = math.floor((epoch - 1) / 30)
             new_lr = self.lr * math.pow(0.1, decay)
             #print('\nReducing learning rate to {}\n'.format(new_lr))
