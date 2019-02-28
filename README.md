@@ -7,7 +7,7 @@ Run code using the command:
 python main.py --net-type <net-type> --dataset_train <train> --dataset_test <test>
 ```
 
-##### where:
+### where:
 **net-type** - lenet or pertube_resnet18 
 
 **dataset_train/ dataset_test** - MNIST, CFIAR-10, EMNIST, CIFAR-100
