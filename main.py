@@ -5,19 +5,16 @@ import utils
 import os
 from datetime import datetime
 import argparse
-import numpy as np
-from torch import nn
-import models
-import torch.optim as optim
 import transfer
 import warnings
+from model import Model
 
 
 result_path = "results/"
 result_path = os.path.join(result_path, datetime.now().strftime('%Y-%m-%d_%H-%M-%S/'))
 
 parser = argparse.ArgumentParser(description='PNN')
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore")
 
 # ======================== Data Setings ============================================
 parser.add_argument('--dataset-test', type=str, default='CIFAR10', metavar='', help='name of testing dataset')
@@ -86,179 +83,13 @@ random.seed(args.manual_seed)
 torch.manual_seed(args.manual_seed)
 utils.save_args(args)
 
-
-class Model:
-    def __init__(self, args):
-        self.cuda = torch.cuda.is_available()
-        self.lr = args.learning_rate
-        self.dataset_train_name = args.dataset_train
-        self.nfilters = args.nfilters
-        self.batch_size = args.batch_size
-        self.level = args.level
-        self.net_type = args.net_type
-        self.nmasks = args.nmasks
-        self.unique_masks = args.unique_masks ############# Eli: Define the network
-        self.filter_size = args.filter_size
-        self.first_filter_size = args.first_filter_size
-        self.scale_noise = args.scale_noise
-        self.noise_type = args.noise_type
-        self.act = args.act
-        self.use_act = args.use_act
-        self.dropout = args.dropout
-        self.train_masks = args.train_masks
-        self.debug = args.debug
-        self.pool_type = args.pool_type
-        self.mix_maps = args.mix_maps
-
-        ## Eli: Decide the dataset
-
-        if self.dataset_train_name == "CIFAR10":
-            self.input_size = 32
-            self.nclasses = 10
-            if self.filter_size < 7:
-                self.avgpool = 4
-            elif self.filter_size == 7:
-                self.avgpool = 1
-
-        elif self.dataset_train_name == "CIFAR100":
-            self.input_size = 32
-            self.nclasses = 100
-            if self.filter_size < 7:
-                self.avgpool = 4
-            elif self.filter_size == 7:
-                self.avgpool = 1
-
-        elif self.dataset_train_name == "MNIST":
-            self.nclasses = 10
-            self.input_size = 28
-            if self.filter_size < 7:
-                self.avgpool = 14
-            elif self.filter_size == 7:
-                self.avgpool = 7
-
-        elif self.dataset_train_name == "EMNIST":
-            self.nclasses = 47
-            self.input_size = 28
-            if self.filter_size < 7:
-                self.avgpool = 14
-            elif self.filter_size == 7:
-                self.avgpool = 7
-
-        else:
-            raise ValueError("Eli: Unknown Dataset {}".format(self.dataset_train_name))
-
-        self.model = getattr(models, self.net_type)(
-            nfilters=self.nfilters,
-            avgpool=self.avgpool,
-            nclasses=self.nclasses,
-            nmasks=self.nmasks,
-            unique_masks=self.unique_masks,
-            level=self.level,
-            filter_size=self.filter_size,
-            first_filter_size=self.first_filter_size,
-            act=self.act,
-            scale_noise=self.scale_noise,
-            noise_type=self.noise_type,
-            use_act=self.use_act,
-            dropout=self.dropout,
-            train_masks=self.train_masks,
-            pool_type=self.pool_type,
-            debug=self.debug,
-            input_size=self.input_size,
-            mix_maps=self.mix_maps
-        )
-
-        self.loss_fn = nn.CrossEntropyLoss()
-
-        # move all params to GPU
-        if self.cuda:
-            self.model = self.model.cuda()
-            self.loss_fn = self.loss_fn.cuda()
-
-        parameters = filter(lambda p: p.requires_grad, self.model.parameters())
-
-        if args.optim_method == 'Adam':
-            self.optimizer = optim.Adam(parameters, lr=self.lr, betas=(args.adam_beta1, args.adam_beta2), weight_decay=args.weight_decay)  # increase weight decay for no-noise large models
-        elif args.optim_method == 'RMSprop':
-            self.optimizer = optim.RMSprop(parameters, lr=self.lr, momentum=args.momentum, weight_decay=args.weight_decay)
-        elif args.optim_method == 'SGD':
-            self.optimizer = optim.SGD(parameters, lr=self.lr,  momentum=args.momentum, weight_decay=args.weight_decay, nesterov=True)
-
-        else:
-            raise(Exception("Unknown Optimization Method"))
-
-    def learning_rate(self, epoch):
-        if self.dataset_train_name == 'CIFAR10':
-            new_lr = self.lr * ((0.2 ** int(epoch >= 150)) * (0.2 ** int(epoch >= 250)) * (0.2 ** int(epoch >= 300)) * (0.2 ** int(epoch >= 350)) * (0.2 ** int(epoch >= 400)))
-        elif self.dataset_train_name == 'CIFAR100':
-            new_lr = self.lr * ((0.1 ** int(epoch >= 80)) * (0.1 ** int(epoch >= 120))* (0.1 ** int(epoch >= 160)))
-        elif self.dataset_train_name == 'MNIST' or self.dataset_train_name == 'EMNIST':
-            new_lr = self.lr * ((0.2 ** int(epoch >= 30)) * (0.2 ** int(epoch >= 60))* (0.2 ** int(epoch >= 90)))
-
-        return new_lr
-
-    def train(self, epoch, dataloader):
-        self.model.train()
-
-        lr = self.learning_rate(epoch+1)
-
-        for param_group in self.optimizer.param_groups:
-            param_group['lr'] = lr
-
-        losses = []
-        accuracies = []
-        for i, (input, label) in enumerate(dataloader):
-            if self.cuda:
-                label = label.cuda()
-                input = input.cuda()
-
-            output = self.model(input)
-            loss = self.loss_fn(output, label)
-            if self.debug:
-                print('\nBatch:', i)
-            # Eli: https://discuss.pytorch.org/t/how-are-optimizer-step-and-loss-backward-related/7350
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
-
-            pred = output.data.max(1)[1]
-
-            acc = pred.eq(label.data).cpu().sum()*100.0 / self.batch_size
-
-            losses.append(loss.item())
-            accuracies.append(acc)
-
-        return np.mean(losses), np.mean(accuracies)
-
-    def test(self, dataloader):
-        self.model.eval()
-        losses = []
-        accuracies = []
-        with torch.no_grad():
-            for i, (input, label) in enumerate(dataloader):
-                if self.cuda:
-                    label = label.cuda()
-                    input = input.cuda()
-
-                output = self.model(input)
-                loss = self.loss_fn(output, label)
-
-                pred = output.data.max(1)[1]
-                acc = pred.eq(label.data).cpu().sum()*100.0 / self.batch_size
-                losses.append(loss.item())
-                accuracies.append(acc)
-
-        return np.mean(losses), np.mean(accuracies)
-
-
-
-### Eli: START HERE ###
-
-print('\n\n****** Creating {} model ******\n\n'.format(args.net_type))
+print('\n\n****** Creating {} model ******'.format(args.net_type))
 setup = Model(args)
-print('\n\n****** Preparing {} dataset *******\n\n'.format(args.dataset_train))
+print("model created successfully!")
+print('\n\n****** Preparing {} dataset *******'.format(args.dataset_train))
 dataloader = Dataloader(args, setup.input_size)
 loader_train, loader_test = dataloader.create()
+print('data prepared successfully!')
 
 # initialize model:
 if args.resume is None:
@@ -271,7 +102,8 @@ if args.resume is None:
     best_epoch = 0
     if os.path.isdir(args.save) == False:
         os.makedirs(args.save)
-else: ### Eli: Transfer Learning
+
+else: # Transfer Learning
     print('\n\nLoading model from saved checkpoint at {}\n\n'.format(args.resume))
     setup.model = torch.load(args.resume)
     model = setup.model
@@ -294,51 +126,18 @@ else: ### Eli: Transfer Learning
         init_epoch += 1
 
 
-
-
-print('\n\n****** Model Graph ******\n\n')
-for arg in vars(model):
-    print(arg, getattr(model, arg))
-
-print('\n\nModel parameters:\n')
-model_total = 0
-for name, param in model.named_parameters():
-    size = param.numel() / 1000000.
-    print('{}  {}  requires_grad: {}  size: {:.2f}M'.format(name, list(param.size()), param.requires_grad, param.numel()/1000000.))
-    model_total += size
-
-print('\n\nNoise masks:\n')
-masks_total = 0
-for name, param in [(name, param) for name, param in model.named_parameters() if 'noise' in name]:
-    size = param.numel() / 1000000.
-    print('{:>22}  size: {:.2f}M'.format(str(list(param.size())), param.numel()/1000000.))
-    masks_total += size
-
-print('\n\nModel size: {:.2f}M regular parameters, {:.2f}M noise mask values\n\n'.format(model_total - masks_total, masks_total))
-
-
-print('\n\n****** Model Configuration ******\n\n')
+print('\n\n****** Model Configuration ******')
 for arg in vars(args):
     print(arg, getattr(args, arg))
+print('\n')
 
-if args.net_type != 'resnet18' and args.net_type != 'noiseresnet18' and (args.first_filter_size == 0 or args.filter_size == 0):
-    if args.train_masks:
-        msg = '(also training noise masks values)'
-    else:
-        msg = '(noise masks are fixed)'
-else:
-    msg = ''
-
-print('\n\nTraining {} model {}\n\n'.format(args.net_type, msg))
 
 accuracies = []
-
-######## Eli: Train loop ########
-
+### Train loop
 for epoch in range(init_epoch, args.nepochs, 1):
 
-    tr_loss, tr_acc = train(epoch, loader_train)
-    te_loss, te_acc = test(loader_test)
+    tr_loss, tr_acc = setup.train(epoch, loader_train)
+    te_loss, te_acc = setup.test(loader_test)
 
     accuracies.append(te_acc)
 
@@ -356,12 +155,7 @@ for epoch in range(init_epoch, args.nepochs, 1):
                                 str(datetime.now())[:-7], epoch, args.nepochs, tr_loss, tr_acc, te_loss, te_acc))
 
 print('\n\nBest Accuracy: {:.2f}  (epoch {:d})\n\n'.format(acc_best, best_epoch))
-
 print('\n\nTest Accuracies:\n\n')
 
 for v in accuracies:
     print('{:.2f}'.format(v)+', ', end='')
-
-
-
-
