@@ -9,7 +9,8 @@ python main.py --net-type <net-type> --dataset_train <train> --dataset_test <tes
 
 ##### where:
 **net-type** - lenet or pertube_resnet18 
-**dataset_train / dataset_test** - MNIST, CFIAR-10, EMNIST, CIFAR-100
+
+**dataset_train/ dataset_test** - MNIST, CFIAR-10, EMNIST, CIFAR-100
 
 ##### Full descriptipon for all the arguments could be fonund using to command: 
 
