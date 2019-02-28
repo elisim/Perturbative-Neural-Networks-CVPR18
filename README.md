@@ -12,12 +12,12 @@ python main.py --net-type <net-type> --dataset_train <train> --dataset_test <tes
 
 **dataset_train/ dataset_test** - MNIST, CFIAR-10, EMNIST, CIFAR-100
 
-##### Full descriptipon for all the arguments could be fonund using to command: 
+### Full descriptipon for all the arguments could be fonund using to command: 
 
 ```
 python main.py --help
 ```
-##### Gives:
+### Gives:
 
 ```
 usage: main.py [-h] [--dataset-test] [--dataset-train] [--dataroot] [--save]
