@@ -1,4 +1,5 @@
-# Perturbative Neural Networks
+# Perturbative Neural Networks [![HitCount](http://hits.dwyl.com/elisim/Perturbative-Neural-Networks-CVPR18.svg)](http://hits.dwyl.com/elisim/Perturbative-Neural-Networks-CVPR18)
+
 Perturbative Neural Networks implementation in PyTorch by Eli Simhayev & Tal Yitzhak.
 
 ## Getting Started
